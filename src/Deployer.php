@@ -34,7 +34,7 @@ class Deployer
             $this->config
         );
 
-        $this->config["ignore"] = $this->shortenIgnores(
+        $this->config["ignore"] = $this->compactIgnores(
             $this->gatherIgnores($this->workingDir)
         );
 
@@ -50,26 +50,32 @@ class Deployer
         if (null === $ignores) {
             $ignores = [];
             foreach ((array)@$this->config["ignore"] as $ignore) {
-                $ignores[] = $this->convertLineToPath($directory->getRealPath(), $ignore, $recursiveIgnores);
+                $ignore = $this->convertLineToPath($directory->getRealPath(), $ignore, $recursiveIgnores);
+                $ignores[$ignore] = $ignore;
             }
         }
 
         if (file_exists($directory->getRealPath() . "/.gitignore")) {
             $file = file_get_contents($directory->getRealPath() . "/.gitignore");
             foreach (explode("\n", $file) as $line) {
-                $ignores[] = $this->convertLineToPath($directory->getRealPath(), $line, $recursiveIgnores);
+                if (!empty($line)) {
+                    $line = $this->convertLineToPath($directory->getRealPath(), $line, $recursiveIgnores);
+                    $ignores[$line] = $line;
+                }
             }
         }
 
         foreach ($recursiveIgnores as $recursiveIgnore) {
-            $ignores[] = ($recursiveIgnore[1] ? "!" : "") . $directory->getRealPath() . $recursiveIgnore[0];
+            $recursiveIgnore = $this->convertLineToPath(
+                $directory->getRealPath(),
+                $recursiveIgnore
+            );
+            $ignores[$recursiveIgnore] = $recursiveIgnore;
         }
-
-        $ignores = $this->compactIgnores($ignores);
 
         foreach (new \DirectoryIterator($directory->getRealPath()) as $subDirectory) {
             if ($subDirectory->isDir() && !$subDirectory->isDot()) {
-                if (in_array($subDirectory->getRealPath(), $ignores)) {
+                if (isset($ignores[$subDirectory->getRealPath()]) && !isset($ignores["!" . $subDirectory->getRealPath()])) {
                     continue; // Skip ignored folders
                 }
                 $ignores = $this->gatherIgnores($subDirectory, $ignores, $recursiveIgnores);
@@ -79,7 +85,7 @@ class Deployer
         return $ignores;
     }
 
-    private function convertLineToPath($basePath, $line, &$recursiveIgnores)
+    private function convertLineToPath($basePath, $line, array &$recursiveIgnores = [])
     {
         $line = trim($line);
         if (empty($line)) {
@@ -99,7 +105,7 @@ class Deployer
 
         if (DIRECTORY_SEPARATOR !== $line[0]) {
             $line = DIRECTORY_SEPARATOR . $line;
-            $recursiveIgnores[] = [$line, $negative];
+            $recursiveIgnores[$line] = $line;
         }
 
         $realPath = (new \SplFileInfo($basePath . $line))->getRealPath();
@@ -110,32 +116,26 @@ class Deployer
         return ($negative ? "!" : "") . $realPath;
     }
 
-    private function compactIgnores($ignores)
+    private function compactIgnores(array $ignores)
     {
         $compactedIgnores = [];
         foreach ($ignores as $ignore) {
-            if (!empty($ignore) && !in_array("!{$ignore}", $ignores)) {
-                $compactedIgnores[] = $ignore;
+            if (!empty($ignore) && !isset($ignores["!{$ignore}"])) {
+                $compactedIgnores[] = $this->shortenIgnore($ignore);
             }
         }
 
-        $compactedIgnores = array_unique($compactedIgnores);
         rsort($compactedIgnores);
 
         return $compactedIgnores;
     }
 
-    private function shortenIgnores($ignores)
+    private function shortenIgnore($ignore)
     {
-        $shortenedIgnores = [];
-        foreach ($ignores as $ignore) {
-            $shortenedIgnores[] = preg_replace(
-                '/^(!)?'.preg_quote($this->workingDir->getRealPath(), '/').'/',
-                "\$1",
-                $ignore
-            );
-        }
-
-        return $shortenedIgnores;
+        return preg_replace(
+            '/^(!)?'.preg_quote($this->workingDir->getRealPath(), '/').'/',
+            "\$1",
+            $ignore
+        );
     }
 }
