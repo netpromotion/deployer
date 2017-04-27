@@ -26,6 +26,9 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
             "log" => __DIR__ . "/DeployerTest/deploy.log",
             "ignore" => [
                 "/www/cache",
+                "/www/assets/cache",
+                "/www/assets/.git",
+                "/www/assets/*.log",
                 "/www/.git",
                 "/www/*.log",
                 "/vendor/netpromotion/deployer/vendor",
@@ -69,6 +72,8 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     {
         $expected = [
             __DIR__ . "/DeployerTest/www/cache",
+            __DIR__ . "/DeployerTest/www/assets/cache",
+            __DIR__ . "/DeployerTest/www/assets/*.log",
             __DIR__ . "/DeployerTest/www/*.log",
             __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/vendor",
             __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/src/cache",

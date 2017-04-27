@@ -34,10 +34,10 @@ class Deployer
      */
     public function getConfig()
     {
-        $logFile = $this->workingDir->getRealPath() . "/deploy.log";
+        $logFile = $this->workingDir->getPathname() . "/deploy.log";
         $this->config = array_merge_recursive(
             [
-                "local" => $this->workingDir->getRealPath(),
+                "local" => $this->workingDir->getPathname(),
                 "log" => $logFile,
                 "ignore" => [
                     ".git",
@@ -70,16 +70,16 @@ class Deployer
         if (null === $ignores) {
             $ignores = [];
             foreach ((array)@$this->config["ignore"] as $ignore) {
-                $ignore = $this->convertLineToPath($directory->getRealPath(), $ignore, $recursiveIgnores);
+                $ignore = $this->convertLineToPath($directory->getPathname(), $ignore, $recursiveIgnores);
                 $ignores[$ignore] = self::PLACEHOLDER;
             }
         }
 
-        if (file_exists($directory->getRealPath() . "/.gitignore")) {
-            $file = file_get_contents($directory->getRealPath() . "/.gitignore");
+        if (file_exists($directory->getPathname() . "/.gitignore")) {
+            $file = file_get_contents($directory->getPathname() . "/.gitignore");
             foreach (explode("\n", $file) as $line) {
                 if (!empty($line)) {
-                    $line = $this->convertLineToPath($directory->getRealPath(), $line, $recursiveIgnores);
+                    $line = $this->convertLineToPath($directory->getPathname(), $line, $recursiveIgnores);
                     $ignores[$line] = self::PLACEHOLDER;
                 }
             }
@@ -87,15 +87,15 @@ class Deployer
 
         foreach ($recursiveIgnores as $recursiveIgnore) {
             $recursiveIgnore = $this->convertLineToPath(
-                $directory->getRealPath(),
+                $directory->getPathname(),
                 $recursiveIgnore
             );
             $ignores[$recursiveIgnore] = self::PLACEHOLDER;
         }
 
-        foreach (new \DirectoryIterator($directory->getRealPath()) as $subDirectory) {
+        foreach (new \DirectoryIterator($directory->getPathname()) as $subDirectory) {
             if ($subDirectory->isDir() && !$subDirectory->isDot()) {
-                if (isset($ignores[$subDirectory->getRealPath()]) && !isset($ignores["!" . $subDirectory->getRealPath()])) {
+                if (isset($ignores[$subDirectory->getPathname()]) && !isset($ignores["!" . $subDirectory->getPathname()])) {
                     continue; // Skip ignored folders
                 }
                 $ignores = $this->gatherIgnores($subDirectory, $ignores, $recursiveIgnores);
@@ -134,7 +134,7 @@ class Deployer
             $recursiveIgnores[$item] = $item;
         }
 
-        $realPath = (new \SplFileInfo($basePath . $item))->getRealPath();
+        $realPath = (new \SplFileInfo($basePath . $item))->getPathname();
         if (empty($realPath)) {
             $realPath = $basePath . $item; // Wildcard
         }
@@ -167,7 +167,7 @@ class Deployer
     private function shortenIgnore($ignore)
     {
         return preg_replace(
-            '/^(!)?'.preg_quote($this->workingDir->getRealPath(), '/').'/',
+            '/^(!)?'.preg_quote($this->workingDir->getPathname(), '/').'/',
             "\$1",
             $ignore
         );
