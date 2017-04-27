@@ -1,0 +1,33 @@
+{
+  "name": "netpromotion/deployer",
+  "description": "Takes repository and uploads non-ignored files to remote server",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Petr Knap",
+      "email": "knap@netpromotion.cz"
+    },
+    {
+      "name": "Filip Halaxa",
+      "email": "halaxa@netpromotion.cz"
+    }
+  ],
+  "bin": ["bin/deploy"],
+  "require": {
+    "php": ">=5.4",
+    "dg/ftp-deployment": "^2.7"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^4.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "Netpromotion\\Deployer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Netpromotion\\Deployer\\Test\\": "tests/"
+    }
+  }
+}

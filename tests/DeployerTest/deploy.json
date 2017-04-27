@@ -1,0 +1,7 @@
+{
+  "remote": "ftp://anonymous@127.0.0.1/DeployerTest",
+  "ignore": [
+    "/tests/",
+    "!/vendor/"
+  ]
+}
