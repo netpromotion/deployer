@@ -26,7 +26,8 @@ class Deployer
                 "local" => $this->workingDir->getRealPath(),
                 "log" => $logFile,
                 "ignore" => [
-                    "/deploy.json"
+                    ".git",
+                    "/deploy.*"
                 ],
                 "preprocess" => false,
             ],
@@ -53,15 +54,15 @@ class Deployer
             }
         }
 
-        foreach ($recursiveIgnores as $recursiveIgnore) {
-            $ignores[] = ($recursiveIgnore[1] ? "!" : "") . $directory->getRealPath() . $recursiveIgnore[0];
-        }
-
         if (file_exists($directory->getRealPath() . "/.gitignore")) {
             $file = file_get_contents($directory->getRealPath() . "/.gitignore");
             foreach (explode("\n", $file) as $line) {
                 $ignores[] = $this->convertLineToPath($directory->getRealPath(), $line, $recursiveIgnores);
             }
+        }
+
+        foreach ($recursiveIgnores as $recursiveIgnore) {
+            $ignores[] = ($recursiveIgnore[1] ? "!" : "") . $directory->getRealPath() . $recursiveIgnore[0];
         }
 
         $ignores = $this->compactIgnores($ignores);
@@ -101,7 +102,12 @@ class Deployer
             $recursiveIgnores[] = [$line, $negative];
         }
 
-        return ($negative ? "!" : "") . (new \SplFileInfo($basePath . DIRECTORY_SEPARATOR . $line))->getRealPath();
+        $realPath = (new \SplFileInfo($basePath . $line))->getRealPath();
+        if (empty($realPath)) {
+            $realPath = $basePath . $line; // Wildcard
+        }
+
+        return ($negative ? "!" : "") . $realPath;
     }
 
     private function compactIgnores($ignores)
