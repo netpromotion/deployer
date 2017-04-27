@@ -6,10 +6,19 @@ class Deployer
 {
     const PLACEHOLDER = true;
 
+    /**
+     * @var \SplFileInfo
+     */
     private $workingDir;
 
+    /**
+     * @var array
+     */
     private $config;
 
+    /**
+     * @param string $workingDir
+     */
     public function __construct($workingDir)
     {
         $this->workingDir = new \SplFileInfo($workingDir);
@@ -20,6 +29,9 @@ class Deployer
         );
     }
 
+    /**
+     * @return array
+     */
     public function getConfig()
     {
         $logFile = $this->workingDir->getRealPath() . "/deploy.log";
@@ -43,6 +55,12 @@ class Deployer
         return $this->config;
     }
 
+    /**
+     * @param \SplFileInfo $directory
+     * @param array $ignores
+     * @param array $recursiveIgnores
+     * @return array
+     */
     private function gatherIgnores(\SplFileInfo $directory = null, array $ignores = null, array $recursiveIgnores = [])
     {
         if (null === $directory) {
@@ -87,37 +105,47 @@ class Deployer
         return $ignores;
     }
 
-    private function convertLineToPath($basePath, $line, array &$recursiveIgnores = [])
+    /**
+     * @param string $basePath
+     * @param string $item
+     * @param array $recursiveIgnores
+     * @return null|string
+     */
+    private function convertLineToPath($basePath, $item, array &$recursiveIgnores = [])
     {
-        $line = trim($line);
-        if (empty($line)) {
+        $item = trim($item);
+        if (empty($item)) {
             return null; // Skip empty lines
         }
 
-        if ("#" === $line[0]) {
+        if ("#" === $item[0]) {
             return null; // Skip comments
         }
 
-        if ("!" === $line[0]) {
+        if ("!" === $item[0]) {
             $negative = true;
-            $line = substr($line, 1); // Remove negative mark
+            $item = substr($item, 1); // Remove negative mark
         } else {
             $negative = false;
         }
 
-        if (DIRECTORY_SEPARATOR !== $line[0]) {
-            $line = DIRECTORY_SEPARATOR . $line;
-            $recursiveIgnores[$line] = $line;
+        if (DIRECTORY_SEPARATOR !== $item[0]) {
+            $item = DIRECTORY_SEPARATOR . $item;
+            $recursiveIgnores[$item] = $item;
         }
 
-        $realPath = (new \SplFileInfo($basePath . $line))->getRealPath();
+        $realPath = (new \SplFileInfo($basePath . $item))->getRealPath();
         if (empty($realPath)) {
-            $realPath = $basePath . $line; // Wildcard
+            $realPath = $basePath . $item; // Wildcard
         }
 
         return ($negative ? "!" : "") . $realPath;
     }
 
+    /**
+     * @param array $ignores
+     * @return array
+     */
     private function compactIgnores(array $ignores)
     {
         $compactedIgnores = [];
@@ -132,6 +160,10 @@ class Deployer
         return $compactedIgnores;
     }
 
+    /**
+     * @param $ignore
+     * @return string
+     */
     private function shortenIgnore($ignore)
     {
         return preg_replace(
