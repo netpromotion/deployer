@@ -75,14 +75,22 @@ class Deployer
             }
         }
 
+        $ignoresAll = false;
         if (file_exists($directory->getPathname() . "/.gitignore")) {
             $file = file_get_contents($directory->getPathname() . "/.gitignore");
             foreach (explode("\n", $file) as $line) {
                 if (!empty($line)) {
+                    if ("*" === $line || "/*" === $line) {
+                        $ignoresAll = true;
+                    }
                     $line = $this->convertLineToPath($directory->getPathname(), $line, $recursiveIgnores);
                     $ignores[$line] = self::PLACEHOLDER;
                 }
             }
+        }
+
+        if ($ignoresAll) {
+            return $ignores;
         }
 
         foreach ($recursiveIgnores as $recursiveIgnore) {
@@ -127,6 +135,10 @@ class Deployer
             $item = substr($item, 1); // Remove negative mark
         } else {
             $negative = false;
+        }
+
+        if ("*" === $item) {
+            $item = "/*"; // Simplify recursive star wildcard by non-recursive rule
         }
 
         if (DIRECTORY_SEPARATOR !== $item[0]) {

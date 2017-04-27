@@ -45,6 +45,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "/vendor/.git",
                 "/vendor/*.log",
                 "/tests",
+                "/temp/*",
                 "/src/cache",
                 "/src/Web/cache",
                 "/src/Web/Resources/public/cache",
@@ -62,6 +63,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "/.git",
                 "/*.log",
                 "!/vendor",
+                '!/temp/.gitignore',
             ],
             "remote" => "ftp://anonymous@production/DeployerTest",
             "preprocess" => false,
@@ -95,8 +97,10 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
             __DIR__ . "/DeployerTest/src/*.log",
             "!" . __DIR__ . "/DeployerTest/vendor",
             __DIR__ . "/DeployerTest/vendor",
+            __DIR__ . "/DeployerTest/temp/*",
+            "!" . __DIR__ . "/DeployerTest/temp/.gitignore",
             __DIR__ . "/DeployerTest/cache",
-            __DIR__ . "/DeployerTest/*.log"
+            __DIR__ . "/DeployerTest/*.log",
         ];
 
         $expected = array_combine($expected, array_fill(0, count($expected), Deployer::PLACEHOLDER));
