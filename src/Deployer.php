@@ -98,6 +98,9 @@ class Deployer
                 $directory->getPathname(),
                 $recursiveIgnore
             );
+            if (preg_match('/^[^\*^\|]*$/', $recursiveIgnore) && !file_exists($recursiveIgnore)) {
+                continue;
+            }
             $ignores[$recursiveIgnore] = self::PLACEHOLDER;
         }
 
