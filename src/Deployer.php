@@ -4,6 +4,8 @@ namespace Netpromotion\Deployer;
 
 class Deployer
 {
+    const PLACEHOLDER = true;
+
     private $workingDir;
 
     private $config;
@@ -51,7 +53,7 @@ class Deployer
             $ignores = [];
             foreach ((array)@$this->config["ignore"] as $ignore) {
                 $ignore = $this->convertLineToPath($directory->getRealPath(), $ignore, $recursiveIgnores);
-                $ignores[$ignore] = $ignore;
+                $ignores[$ignore] = self::PLACEHOLDER;
             }
         }
 
@@ -60,7 +62,7 @@ class Deployer
             foreach (explode("\n", $file) as $line) {
                 if (!empty($line)) {
                     $line = $this->convertLineToPath($directory->getRealPath(), $line, $recursiveIgnores);
-                    $ignores[$line] = $line;
+                    $ignores[$line] = self::PLACEHOLDER;
                 }
             }
         }
@@ -70,7 +72,7 @@ class Deployer
                 $directory->getRealPath(),
                 $recursiveIgnore
             );
-            $ignores[$recursiveIgnore] = $recursiveIgnore;
+            $ignores[$recursiveIgnore] = self::PLACEHOLDER;
         }
 
         foreach (new \DirectoryIterator($directory->getRealPath()) as $subDirectory) {
@@ -119,7 +121,7 @@ class Deployer
     private function compactIgnores(array $ignores)
     {
         $compactedIgnores = [];
-        foreach ($ignores as $ignore) {
+        foreach ($ignores as $ignore => $placeholder) {
             if (!empty($ignore) && !isset($ignores["!{$ignore}"])) {
                 $compactedIgnores[] = $this->shortenIgnore($ignore);
             }

@@ -94,7 +94,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
             __DIR__ . "/DeployerTest/*.log"
         ];
 
-        $expected = array_combine($expected, $expected);
+        $expected = array_combine($expected, array_fill(0, count($expected), Deployer::PLACEHOLDER));
 
         $this->assertEquals($expected, $this->invoke($this->getDeployer(), "gatherIgnores"));
     }
@@ -111,10 +111,10 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "compactIgnores",
                 [
                     [
-                        "a" => "a",
-                        "b" => "b",
-                        "!b" => "!b",
-                        "" => "",
+                        "a" => Deployer::PLACEHOLDER,
+                        "b" => Deployer::PLACEHOLDER,
+                        "!b" => Deployer::PLACEHOLDER,
+                        "" => Deployer::PLACEHOLDER,
                     ]
                 ]
             )
