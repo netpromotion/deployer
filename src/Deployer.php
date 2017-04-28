@@ -70,9 +70,14 @@ class Deployer
 
         if (null === $ignores) {
             $ignores = [];
+            $masterIgnores = [];
             foreach ((array)@$this->config["ignore"] as $ignore) {
                 $ignore = $this->convertLineToPath($directory->getPathname(), $ignore, $recursiveIgnores);
-                $ignores[$ignore] = self::PLACEHOLDER;
+                if ("!" === $ignore[0]) {
+                    $ignores[$ignore] = self::PLACEHOLDER;
+                } else {
+                    $masterIgnores[$ignore] = self::PLACEHOLDER;
+                }
             }
         }
 
@@ -105,13 +110,20 @@ class Deployer
             $ignores[$recursiveIgnore] = self::PLACEHOLDER;
         }
 
+        krsort($ignores);
+
         foreach (new \DirectoryIterator($directory->getPathname()) as $subDirectory) {
             if ($subDirectory->isDir() && !$subDirectory->isDot()) {
                 if (isset($ignores[$subDirectory->getPathname()]) && !isset($ignores["!" . $subDirectory->getPathname()])) {
                     continue; // Skip ignored folders
                 }
-                $ignores = $this->gatherIgnores($subDirectory, $ignores, $recursiveIgnores);
+                $ignores = array_merge($ignores, $this->gatherIgnores($subDirectory, [], $recursiveIgnores));
             }
+        }
+
+        if (isset($masterIgnores)) {
+            krsort($masterIgnores);
+            $ignores = array_merge($ignores, $masterIgnores);
         }
 
         return $ignores;
@@ -185,8 +197,6 @@ class Deployer
                 }
             }
         }
-
-        rsort($compactedIgnores);
 
         return $compactedIgnores;
     }
