@@ -167,7 +167,22 @@ class Deployer
         $compactedIgnores = [];
         foreach ($ignores as $ignore => $placeholder) {
             if (!empty($ignore) && !isset($ignores["!{$ignore}"])) {
-                $compactedIgnores[] = $this->shortenIgnore($ignore);
+                if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
+                    if ("!" === $ignore[0]) {
+                        $path = substr($ignore, 1);
+                    } else {
+                        $path = $ignore;
+                    }
+
+                    if (file_exists($path)) {
+                        if (is_dir($path)) {
+                            $ignore .= DIRECTORY_SEPARATOR;
+                        }
+                        $compactedIgnores[] = $this->shortenIgnore($ignore);
+                    }
+                } else {
+                    $compactedIgnores[] = $this->shortenIgnore($ignore);
+                }
             }
         }
 
@@ -182,18 +197,6 @@ class Deployer
      */
     private function shortenIgnore($ignore)
     {
-        if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
-            if ("!" === $ignore[0]) {
-                $path = substr($ignore, 1);
-            } else {
-                $path = $ignore;
-            }
-
-            if (is_dir($path)) {
-                $ignore .= DIRECTORY_SEPARATOR;
-            }
-        }
-
         $ignore = preg_replace(
             '/^(!)?'.preg_quote($this->workingDir->getPathname(), '/').'/',
             "\$1",

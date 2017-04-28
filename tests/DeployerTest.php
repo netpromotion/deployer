@@ -39,9 +39,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "/src/Web/Resources/*.log",
                 "/src/Web/*.log",
                 "/src/*.log",
-                "/docs",
                 "/deploy.*",
-                "/.git",
                 "/*.log",
                 "!/vendor/",
                 '!/temp/.gitignore',
@@ -84,18 +82,18 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             [
-                "a",
-                "!b",
+                "/src/Web/Resources/docs/",
+                "!/vendor/",
             ],
             $this->invoke(
                 $this->getDeployer(),
                 "compactIgnores",
                 [
                     [
-                        "a" => Deployer::PLACEHOLDER,
-                        "b" => Deployer::PLACEHOLDER,
-                        "!b" => Deployer::PLACEHOLDER,
-                        "" => Deployer::PLACEHOLDER,
+                        __DIR__ . "/DeployerTest/vendor" => Deployer::PLACEHOLDER,
+                        __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::PLACEHOLDER,
+                        "!" . __DIR__ . "/DeployerTest/vendor" => Deployer::PLACEHOLDER,
+                        "!" . __DIR__ . "/DeployerTest/docs" => Deployer::PLACEHOLDER,
                     ]
                 ]
             )
@@ -117,8 +115,8 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
         return [
             [__DIR__ . "/DeployerTest/docs", "/docs"],
             ["!" . __DIR__ . "/DeployerTest/docs", "!/docs"],
-            [__DIR__ . "/DeployerTest/src/Web/Resources/docs", "/src/Web/Resources/docs/"],
-            ["!" . __DIR__ . "/DeployerTest/src/Web/Resources/docs", "!/src/Web/Resources/docs/"],
+            [__DIR__ . "/DeployerTest/src/Web/Resources/docs", "/src/Web/Resources/docs"],
+            ["!" . __DIR__ . "/DeployerTest/src/Web/Resources/docs", "!/src/Web/Resources/docs"],
         ];
     }
 }
