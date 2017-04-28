@@ -27,15 +27,15 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
             "ignore" => [
                 "/www/assets/*.log",
                 "/www/*.log",
-                "/vendor/netpromotion/deployer/vendor",
+                "/vendor/netpromotion/deployer/vendor/",
                 "/vendor/netpromotion/deployer/src/*.log",
                 "/vendor/netpromotion/deployer/*.log",
                 "/vendor/netpromotion/*.log",
                 "/vendor/*.log",
-                "/tests",
+                "/tests/",
                 "/temp/*",
                 "/src/Web/Resources/public/*.log",
-                "/src/Web/Resources/docs",
+                "/src/Web/Resources/docs/",
                 "/src/Web/Resources/*.log",
                 "/src/Web/*.log",
                 "/src/*.log",
@@ -43,7 +43,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "/deploy.*",
                 "/.git",
                 "/*.log",
-                "!/vendor",
+                "!/vendor/",
                 '!/temp/.gitignore',
             ],
             "remote" => "ftp://anonymous@production/DeployerTest",
@@ -115,8 +115,10 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     public function dataShortenIgnoreWorks()
     {
         return [
-            ["/tmp/test", "/tmp/test"],
-            ["!/tmp/test", "!/tmp/test"],
+            [__DIR__ . "/DeployerTest/docs", "/docs"],
+            ["!" . __DIR__ . "/DeployerTest/docs", "!/docs"],
+            [__DIR__ . "/DeployerTest/src/Web/Resources/docs", "/src/Web/Resources/docs/"],
+            ["!" . __DIR__ . "/DeployerTest/src/Web/Resources/docs", "!/src/Web/Resources/docs/"],
         ];
     }
 }

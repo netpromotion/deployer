@@ -5,6 +5,7 @@ namespace Netpromotion\Deployer;
 class Deployer
 {
     const PLACEHOLDER = true;
+    const ABSOLUTE_IGNORE = '/^[^\*^\?^\[]*$/';
 
     /**
      * @var \SplFileInfo
@@ -98,7 +99,7 @@ class Deployer
                 $directory->getPathname(),
                 $recursiveIgnore
             );
-            if (preg_match('/^[^\*^\|]*$/', $recursiveIgnore) && !file_exists($recursiveIgnore)) {
+            if (preg_match(self::ABSOLUTE_IGNORE, $recursiveIgnore) && !file_exists($recursiveIgnore)) {
                 continue;
             }
             $ignores[$recursiveIgnore] = self::PLACEHOLDER;
@@ -181,10 +182,24 @@ class Deployer
      */
     private function shortenIgnore($ignore)
     {
-        return preg_replace(
+        if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
+            if ("!" === $ignore[0]) {
+                $path = substr($ignore, 1);
+            } else {
+                $path = $ignore;
+            }
+
+            if (is_dir($path)) {
+                $ignore .= DIRECTORY_SEPARATOR;
+            }
+        }
+
+        $ignore = preg_replace(
             '/^(!)?'.preg_quote($this->workingDir->getPathname(), '/').'/',
             "\$1",
             $ignore
         );
+
+        return $ignore;
     }
 }
