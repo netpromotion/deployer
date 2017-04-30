@@ -168,6 +168,10 @@ class Deployer
     {
         $compactedIgnores = [];
         foreach ($ignores as $ignore => $placeholder) {
+            if (empty($ignore)) {
+                continue;
+            }
+
             $compactedIgnore = null;
             if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
                 if ("!" === $ignore[0]) {
