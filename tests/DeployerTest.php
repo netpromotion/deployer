@@ -38,6 +38,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 '!/temp/.gitignore',
                 "/src/*.log",
                 "/src/Web/*.log",
+                "/src/Web/Resources/docs/",
                 "/src/Web/Resources/*.log",
                 "!/src/Web/Resources/docs/",
                 "/src/Web/Resources/public/*.log",
@@ -89,6 +90,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             [
+                "/vendor/",
                 "/src/Web/Resources/docs/",
                 "!/vendor/",
             ],

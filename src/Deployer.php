@@ -168,27 +168,30 @@ class Deployer
     {
         $compactedIgnores = [];
         foreach ($ignores as $ignore => $placeholder) {
-            if (!empty($ignore) && !isset($ignores["!{$ignore}"])) {
-                if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
-                    if ("!" === $ignore[0]) {
-                        $path = substr($ignore, 1);
-                    } else {
-                        $path = $ignore;
-                    }
-
-                    if (file_exists($path)) {
-                        if (is_dir($path)) {
-                            $ignore .= DIRECTORY_SEPARATOR;
-                        }
-                        $compactedIgnores[] = $this->shortenIgnore($ignore);
-                    }
+            $compactedIgnore = null;
+            if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
+                if ("!" === $ignore[0]) {
+                    $path = substr($ignore, 1);
                 } else {
-                    $compactedIgnores[] = $this->shortenIgnore($ignore);
+                    $path = $ignore;
                 }
+
+                if (file_exists($path)) {
+                    if (is_dir($path)) {
+                        $ignore .= DIRECTORY_SEPARATOR;
+                    }
+                    $compactedIgnore = $this->shortenIgnore($ignore);
+                }
+            } else {
+                $compactedIgnore = $this->shortenIgnore($ignore);
+            }
+
+            if (null !== $compactedIgnore && !isset($compactedIgnores["!{$compactedIgnore}"])) {
+                $compactedIgnores[$compactedIgnore] = self::PLACEHOLDER;
             }
         }
 
-        return $compactedIgnores;
+        return array_keys($compactedIgnores);
     }
 
     /**
