@@ -81,24 +81,6 @@ class Deployer
             }
         }
 
-        $ignoresAll = false;
-        if (file_exists($directory->getPathname() . "/.gitignore")) {
-            $file = file_get_contents($directory->getPathname() . "/.gitignore");
-            foreach (explode("\n", $file) as $line) {
-                if (!empty($line)) {
-                    if ("*" === $line || "/*" === $line) {
-                        $ignoresAll = true;
-                    }
-                    $line = $this->convertLineToPath($directory->getPathname(), $line, $recursiveIgnores);
-                    $ignores[$line] = self::PLACEHOLDER;
-                }
-            }
-        }
-
-        if ($ignoresAll) {
-            return $ignores;
-        }
-
         foreach ($recursiveIgnores as $recursiveIgnore) {
             $recursiveIgnore = $this->convertLineToPath(
                 $directory->getPathname(),
@@ -110,7 +92,15 @@ class Deployer
             $ignores[$recursiveIgnore] = self::PLACEHOLDER;
         }
 
-        krsort($ignores);
+        if (file_exists($directory->getPathname() . "/.gitignore")) {
+            $file = file_get_contents($directory->getPathname() . "/.gitignore");
+            foreach (explode("\n", $file) as $line) {
+                if (!empty($line)) {
+                    $line = $this->convertLineToPath($directory->getPathname(), $line, $recursiveIgnores);
+                    $ignores[$line] = self::PLACEHOLDER;
+                }
+            }
+        }
 
         foreach (new \DirectoryIterator($directory->getPathname()) as $subDirectory) {
             if ($subDirectory->isDir() && !$subDirectory->isDot()) {
