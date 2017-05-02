@@ -47,7 +47,8 @@ class Deployer
                 ],
                 "ignore" => [
                     ".git",
-                    "/deploy.*"
+                    "/deploy.json",
+                    "/deploy.local.json"
                 ],
                 "preprocess" => false,
             ],
