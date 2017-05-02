@@ -1,5 +1,8 @@
 {
   "remote": "ftp://anonymous@127.0.0.1/DeployerTest",
+  "log": {
+    "config": "/deploy.config.log"
+  },
   "ignore": [
     "/tests/",
     "!/vendor/"

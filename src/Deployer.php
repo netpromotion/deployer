@@ -36,11 +36,15 @@ class Deployer
      */
     public function getConfig()
     {
-        $logFile = $this->workingDir->getPathname() . "/deploy.log";
+        $log = @$this->config["log"];
+        unset($this->config["log"]);
         $this->config = array_merge_recursive(
             [
                 "local" => $this->workingDir->getPathname(),
-                "log" => $logFile,
+                "log" => [
+                    "output" => "/deploy.log",
+                    "config" => null,
+                ],
                 "ignore" => [
                     ".git",
                     "/deploy.*"
@@ -49,6 +53,14 @@ class Deployer
             ],
             $this->config
         );
+
+        $this->config["log"] = array_merge($this->config["log"], $log);
+        if (null !== $this->config["log"]["output"]) {
+            $this->config["log"]["output"] = $this->convertLineToPath($this->workingDir->getPathname(), $this->config["log"]["output"]);
+        }
+        if (null !== $this->config["log"]["config"]) {
+            $this->config["log"]["config"] = $this->convertLineToPath($this->workingDir->getPathname(), $this->config["log"]["config"]);
+        }
 
         $this->config["ignore"] = $this->compactIgnores(
             $this->gatherIgnores($this->workingDir)

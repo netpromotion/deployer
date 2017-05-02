@@ -23,7 +23,10 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals([
             "local" => __DIR__ . "/DeployerTest",
-            "log" => __DIR__ . "/DeployerTest/deploy.log",
+            "log" => [
+                "output" => __DIR__ . "/DeployerTest/deploy.log",
+                "config" => __DIR__ . "/DeployerTest/deploy.config.log",
+            ],
             "ignore" => [
                 "!/vendor/",
                 "/*.log",
