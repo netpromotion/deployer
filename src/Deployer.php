@@ -36,7 +36,7 @@ class Deployer
      */
     public function getConfig()
     {
-        $log = @$this->config["log"];
+        $log = (array)@$this->config["log"];
         unset($this->config["log"]);
         $this->config = array_merge_recursive(
             [
