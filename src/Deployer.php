@@ -4,8 +4,9 @@ namespace Netpromotion\Deployer;
 
 class Deployer
 {
-    const PLACEHOLDER = true;
-    const ABSOLUTE_IGNORE = '/^[^\*^\?^\[]*$/';
+    const USER_IGNORE = 1;
+    const DYNAMIC_IGNORE = 2;
+    const ABSOLUTE_IGNORE_PATTERN = '/^[^\*^\?^\[]*$/';
 
     /**
      * @var \SplFileInfo
@@ -69,16 +70,17 @@ class Deployer
         }
 
         if (null === $ignores) {
-            $ignores = [];
-            $masterIgnores = [];
+            $negativeUserIgnores = [];
+            $positiveUserIgnores = [];
             foreach ((array)@$this->config["ignore"] as $ignore) {
                 $ignore = $this->convertLineToPath($directory->getPathname(), $ignore, $recursiveIgnores);
                 if ("!" === $ignore[0]) {
-                    $ignores[$ignore] = self::PLACEHOLDER;
+                    $negativeUserIgnores[$ignore] = self::USER_IGNORE;
                 } else {
-                    $masterIgnores[$ignore] = self::PLACEHOLDER;
+                    $positiveUserIgnores[$ignore] = self::USER_IGNORE;
                 }
             }
+            $ignores = $negativeUserIgnores;
         }
 
         foreach ($recursiveIgnores as $recursiveIgnore) {
@@ -86,10 +88,10 @@ class Deployer
                 $directory->getPathname(),
                 $recursiveIgnore
             );
-            if (preg_match(self::ABSOLUTE_IGNORE, $recursiveIgnore) && !file_exists($recursiveIgnore)) {
+            if (preg_match(self::ABSOLUTE_IGNORE_PATTERN, $recursiveIgnore) && !file_exists($recursiveIgnore)) {
                 continue;
             }
-            $ignores[$recursiveIgnore] = self::PLACEHOLDER;
+            $ignores[$recursiveIgnore] = self::DYNAMIC_IGNORE;
         }
 
         if (file_exists($directory->getPathname() . "/.gitignore")) {
@@ -97,7 +99,7 @@ class Deployer
             foreach (explode("\n", $file) as $line) {
                 if (!empty($line)) {
                     $line = $this->convertLineToPath($directory->getPathname(), $line, $recursiveIgnores);
-                    $ignores[$line] = self::PLACEHOLDER;
+                    $ignores[$line] = self::DYNAMIC_IGNORE;
                 }
             }
         }
@@ -111,9 +113,8 @@ class Deployer
             }
         }
 
-        if (isset($masterIgnores)) {
-            krsort($masterIgnores);
-            $ignores = array_merge($ignores, $masterIgnores);
+        if (isset($positiveUserIgnores)) {
+            $ignores = array_merge($ignores, $positiveUserIgnores);
         }
 
         return $ignores;
@@ -167,19 +168,18 @@ class Deployer
     private function compactIgnores(array $ignores)
     {
         $compactedIgnores = [];
-        foreach ($ignores as $ignore => $placeholder) {
+        foreach ($ignores as $ignore => $type) {
             if (empty($ignore)) {
                 continue;
             }
 
             $compactedIgnore = null;
-            if (preg_match(self::ABSOLUTE_IGNORE, $ignore)) {
-                if ("!" === $ignore[0]) {
-                    $path = substr($ignore, 1);
-                } else {
-                    $path = $ignore;
-                }
-
+            if ("!" === $ignore[0]) {
+                $path = substr($ignore, 1);
+            } else {
+                $path = $ignore;
+            }
+            if (preg_match(self::ABSOLUTE_IGNORE_PATTERN, $ignore)) {
                 if (file_exists($path)) {
                     if (is_dir($path)) {
                         $ignore .= DIRECTORY_SEPARATOR;
@@ -190,9 +190,19 @@ class Deployer
                 $compactedIgnore = $this->shortenIgnore($ignore);
             }
 
-            if (null !== $compactedIgnore && !isset($compactedIgnores["!{$compactedIgnore}"])) {
-                $compactedIgnores[$compactedIgnore] = self::PLACEHOLDER;
+            if (empty($compactedIgnore)) {
+                continue;
             }
+
+            if (self::DYNAMIC_IGNORE === $type) {
+                if (isset($ignores[$path]) && self::USER_IGNORE === $ignores[$path]) {
+                    continue;
+                } elseif (isset($ignores["!" . $path]) && self::USER_IGNORE === $ignores["!" . $path]) {
+                    continue;
+                }
+            }
+
+            $compactedIgnores[$compactedIgnore] = $type;
         }
 
         return array_keys($compactedIgnores);

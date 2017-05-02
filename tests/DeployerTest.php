@@ -45,8 +45,8 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "/src/Web/Resources/docs/*.log",
                 "/www/*.log",
                 "/www/assets/*.log",
-                "/tests/",
                 "/deploy.*",
+                "/tests/",
             ],
             "remote" => "ftp://anonymous@production/DeployerTest",
             "preprocess" => false,
@@ -56,32 +56,30 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     public function testGatherIgnoresWorks()
     {
         $expected = [
-            __DIR__ . "/DeployerTest/www/assets/*.log",
-            __DIR__ . "/DeployerTest/www/*.log",
-            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/vendor",
-            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/src/*.log",
-            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/*.log",
-            __DIR__ . "/DeployerTest/vendor/netpromotion/*.log",
-            __DIR__ . "/DeployerTest/vendor/*.log",
-            __DIR__ . "/DeployerTest/tests",
-            __DIR__ . "/DeployerTest/src/Web/Resources/docs",
-            __DIR__ . "/DeployerTest/src/Web/Resources/public/*.log",
-            __DIR__ . "/DeployerTest/src/Web/Resources/*.log",
-            __DIR__ . "/DeployerTest/src/Web/*.log",
-            __DIR__ . "/DeployerTest/src/*.log",
-            "!" . __DIR__ . "/DeployerTest/vendor",
-            __DIR__ . "/DeployerTest/vendor",
-            __DIR__ . "/DeployerTest/temp/*",
-            "!" . __DIR__ . "/DeployerTest/temp/.gitignore",
-            __DIR__ . "/DeployerTest/docs",
-            __DIR__ . "/DeployerTest/*.log",
-            __DIR__ . "/DeployerTest/tests/*.log",
-            __DIR__ . "/DeployerTest/temp/*.log",
-            "!" . __DIR__ . "/DeployerTest/src/Web/Resources/docs",
-            __DIR__ . "/DeployerTest/src/Web/Resources/docs/*.log",
+            __DIR__ . "/DeployerTest/www/assets/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/www/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/vendor" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/src/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/tests" => Deployer::USER_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/public/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/*.log" => Deployer::DYNAMIC_IGNORE,
+            "!" . __DIR__ . "/DeployerTest/vendor" => Deployer::USER_IGNORE,
+            __DIR__ . "/DeployerTest/vendor" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/temp/*" => Deployer::DYNAMIC_IGNORE,
+            "!" . __DIR__ . "/DeployerTest/temp/.gitignore" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/docs" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/tests/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/temp/*.log" => Deployer::DYNAMIC_IGNORE,
+            "!" . __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/docs/*.log" => Deployer::DYNAMIC_IGNORE,
         ];
-
-        $expected = array_combine($expected, array_fill(0, count($expected), Deployer::PLACEHOLDER));
 
         $this->assertEquals($expected, $this->invoke($this->getDeployer(), "gatherIgnores"));
     }
@@ -99,10 +97,10 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "compactIgnores",
                 [
                     [
-                        __DIR__ . "/DeployerTest/vendor" => Deployer::PLACEHOLDER,
-                        __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::PLACEHOLDER,
-                        "!" . __DIR__ . "/DeployerTest/vendor" => Deployer::PLACEHOLDER,
-                        "!" . __DIR__ . "/DeployerTest/docs" => Deployer::PLACEHOLDER,
+                        __DIR__ . "/DeployerTest/vendor" => Deployer::DYNAMIC_IGNORE,
+                        __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::DYNAMIC_IGNORE,
+                        "!" . __DIR__ . "/DeployerTest/vendor" => Deployer::DYNAMIC_IGNORE,
+                        "!" . __DIR__ . "/DeployerTest/docs" => Deployer::DYNAMIC_IGNORE,
                     ]
                 ]
             )
