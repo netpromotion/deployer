@@ -117,13 +117,22 @@ class Deployer
             }
         }
 
-        foreach (new \DirectoryIterator($directory->getPathname()) as $subDirectory) {
-            if ($subDirectory->isDir() && !$subDirectory->isDot()) {
-                if (isset($ignores[$subDirectory->getPathname()]) && !isset($ignores["!" . $subDirectory->getPathname()])) {
-                    continue; // Skip ignored folders
-                }
-                $ignores = array_merge($ignores, $this->gatherIgnores($subDirectory, [], $recursiveIgnores));
+        foreach (scandir($directory->getPathname()) as $subDirectory) {
+            if (in_array($subDirectory, [".", ".."])) {
+                continue; // Skip dots
             }
+
+            $subDirectory = new \SplFileInfo($directory->getPathname() . DIRECTORY_SEPARATOR . $subDirectory);
+
+            if (!is_dir($subDirectory->getRealPath())) {
+                continue; // Skip files
+            }
+
+            if (isset($ignores[$subDirectory->getPathname()]) && !isset($ignores["!" . $subDirectory->getPathname()])) {
+                continue; // Skip ignored folders
+            }
+
+            $ignores = array_merge($ignores, $this->gatherIgnores($subDirectory, [], $recursiveIgnores));
         }
 
         if (isset($positiveUserIgnores)) {
