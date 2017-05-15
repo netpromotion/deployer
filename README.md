@@ -7,9 +7,9 @@ It takes repository and uploads non-ignored files to remote server
 
 1. Go to your project directory
 1. Run `composer require --dev netpromotion/deployer`
-2. Create [`deploy.json` file](#deploy-json)
+2. Create [`deploy.json` file](#deployjson)
 3. Configure it the same way as [`dg/ftp-deployment`]
-4. Private properties (f.e. `remote`) extract into [`deploy.local.json` file](#deploy-local-json)
+4. Private properties (f.e. `remote`) extract into [`deploy.local.json` file](#deploylocaljson)
 5. Run `./vendor/bin/deploy`
 
 ## Examples
