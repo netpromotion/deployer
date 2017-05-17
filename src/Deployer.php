@@ -101,9 +101,6 @@ class Deployer
                 $directory->getPathname(),
                 $recursiveIgnore
             );
-            if (preg_match(self::ABSOLUTE_IGNORE_PATTERN, $recursiveIgnore) && !file_exists($recursiveIgnore)) {
-                continue;
-            }
             $ignores[$recursiveIgnore] = self::DYNAMIC_IGNORE;
         }
 

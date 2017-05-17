@@ -60,32 +60,47 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     public function testGatherIgnoresWorks()
     {
         $expected = [
-            __DIR__ . "/DeployerTest/www/assets/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/www/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/vendor" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/src/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/vendor/netpromotion/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/vendor/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/tests" => Deployer::USER_IGNORE,
-            __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/src/Web/Resources/public/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/src/Web/Resources/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/src/Web/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/src/*.log" => Deployer::DYNAMIC_IGNORE,
             "!" . __DIR__ . "/DeployerTest/vendor" => Deployer::USER_IGNORE,
             __DIR__ . "/DeployerTest/vendor" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/temp/*" => Deployer::DYNAMIC_IGNORE,
-            "!" . __DIR__ . "/DeployerTest/temp/.gitignore" => Deployer::DYNAMIC_IGNORE,
             __DIR__ . "/DeployerTest/docs" => Deployer::DYNAMIC_IGNORE,
             __DIR__ . "/DeployerTest/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/tests/*.log" => Deployer::DYNAMIC_IGNORE,
-            __DIR__ . "/DeployerTest/temp/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/src/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/src/Web/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/*.log" => Deployer::DYNAMIC_IGNORE,
             "!" . __DIR__ . "/DeployerTest/src/Web/Resources/docs" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/src/Web/Resources/docs/docs' => Deployer::DYNAMIC_IGNORE,
             __DIR__ . "/DeployerTest/src/Web/Resources/docs/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/src/Web/Resources/public/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/src/Web/Resources/public/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/temp/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/temp/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/temp/*" => Deployer::DYNAMIC_IGNORE,
+            "!" . __DIR__ . "/DeployerTest/temp/.gitignore" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/tests/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/tests/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/vendor/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/vendor/netpromotion/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/vendor/netpromotion/deployer/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/vendor" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/vendor/netpromotion/deployer/src/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/vendor/netpromotion/deployer/src/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/www/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/www/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . '/DeployerTest/www/assets/docs' => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/www/assets/*.log" => Deployer::DYNAMIC_IGNORE,
+            __DIR__ . "/DeployerTest/tests" => Deployer::USER_IGNORE,
         ];
 
-        $this->assertEquals($expected, $this->invoke($this->getDeployer(), "gatherIgnores"));
+        $gathered = $this->invoke($this->getDeployer(), "gatherIgnores");
+
+        $this->assertEquals($expected, $gathered);
+        $this->assertEquals(array_keys($expected), array_keys($gathered));
     }
 
     public function testCompactIgnoresWorks()
