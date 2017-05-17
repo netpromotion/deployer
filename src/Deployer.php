@@ -207,14 +207,19 @@ class Deployer
                     $compactedIgnore = $this->shortenIgnore($ignore);
                 }
             } elseif(preg_match(self::COMPACTABLE_DYNAMIC_IGNORE_PATTERN, $ignore)) {
-                foreach (scandir(dirname($ignore)) as $item) {
-                    if (in_array($item, [".", ".."])) {
-                        continue; // Skip dots
+                $dir = substr($ignore, 0, strrpos($ignore, DIRECTORY_SEPARATOR));
+                if (file_exists($dir)) {
+                    foreach (scandir($dir) as $item) {
+                        if (in_array($item, [".", ".."])) {
+                            continue; // Skip dots
+                        }
+                        if (fnmatch($ignore, dirname($ignore) . DIRECTORY_SEPARATOR . $item)) {
+                            $compactedIgnore = $this->shortenIgnore($ignore);
+                            break;
+                        }
                     }
-                    if (fnmatch($ignore, dirname($ignore) . DIRECTORY_SEPARATOR . $item)) {
-                        $compactedIgnore = $this->shortenIgnore($ignore);
-                        break;
-                    }
+                } else {
+                    $compactedIgnore = $this->shortenIgnore($ignore);
                 }
             } else {
                 $compactedIgnore = $this->shortenIgnore($ignore);
