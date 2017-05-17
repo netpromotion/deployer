@@ -7,6 +7,7 @@ class Deployer
     const USER_IGNORE = 1;
     const DYNAMIC_IGNORE = 2;
     const ABSOLUTE_IGNORE_PATTERN = '/^[^\*^\?^\[]*$/';
+    const COMPACTABLE_DYNAMIC_IGNORE_PATTERN = "/^[^\*]*\*[^\*]+$/";
 
     /**
      * @var \SplFileInfo
@@ -204,6 +205,16 @@ class Deployer
                         $ignore .= DIRECTORY_SEPARATOR;
                     }
                     $compactedIgnore = $this->shortenIgnore($ignore);
+                }
+            } elseif(preg_match(self::COMPACTABLE_DYNAMIC_IGNORE_PATTERN, $ignore)) {
+                foreach (scandir(dirname($ignore)) as $item) {
+                    if (in_array($item, [".", ".."])) {
+                        continue; // Skip dots
+                    }
+                    if (fnmatch($ignore, dirname($ignore) . DIRECTORY_SEPARATOR . $item)) {
+                        $compactedIgnore = $this->shortenIgnore($ignore);
+                        break;
+                    }
                 }
             } else {
                 $compactedIgnore = $this->shortenIgnore($ignore);
