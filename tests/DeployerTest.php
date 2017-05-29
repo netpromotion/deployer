@@ -28,6 +28,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 "config" => __DIR__ . "/DeployerTest/deploy.config.log",
             ],
             "ignore" => [
+                "!/deploy.json",
                 "!/vendor/",
                 "!/src/Web/Resources/docs/",
                 "/temp/*.log",
@@ -35,9 +36,8 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 '!/temp/.gitignore',
                 "/tests/*.log",
                 "/vendor/netpromotion/deployer/vendor/",
-                "/deploy.json",
-                "/deploy.local.json",
                 "/tests/",
+                "/deploy.local.json",
             ],
             "remote" => "ftp://anonymous@production/DeployerTest",
             "preprocess" => false,
@@ -47,6 +47,7 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     public function testGatherIgnoresWorks()
     {
         $expected = [
+            "!" . __DIR__ . "/DeployerTest/deploy.json" => Deployer::USER_IGNORE,
             "!" . __DIR__ . "/DeployerTest/vendor" => Deployer::USER_IGNORE,
             __DIR__ . "/DeployerTest/vendor" => Deployer::DYNAMIC_IGNORE,
             __DIR__ . "/DeployerTest/docs" => Deployer::DYNAMIC_IGNORE,

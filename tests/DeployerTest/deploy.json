@@ -5,6 +5,7 @@
   },
   "ignore": [
     "/tests/",
+    "!/deploy.json",
     "!/vendor/"
   ]
 }

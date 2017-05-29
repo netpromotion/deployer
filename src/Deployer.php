@@ -46,15 +46,25 @@ class Deployer
                     "output" => "/deploy.log",
                     "config" => null,
                 ],
-                "ignore" => [
-                    ".git",
-                    "/deploy.json",
-                    "/deploy.local.json"
-                ],
+                "ignore" => [],
                 "preprocess" => false,
             ],
             $this->config
         );
+
+        $knownFiles = [
+            ".git",
+            "/deploy.json",
+            "/deploy.local.json",
+            $this->config["log"]["output"],
+            $this->config["log"]["config"]
+        ];
+
+        foreach ($knownFiles as $ignore) {
+            if (!in_array("!" . $ignore, $this->config["ignore"])) {
+                $this->config["ignore"][] = $ignore;
+            }
+        }
 
         $this->config["log"] = array_merge($this->config["log"], $log);
         if (null !== $this->config["log"]["output"]) {
