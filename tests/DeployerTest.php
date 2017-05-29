@@ -29,7 +29,6 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
             ],
             "ignore" => [
                 "!/vendor/",
-                "/src/Web/Resources/docs/",
                 "!/src/Web/Resources/docs/",
                 "/temp/*.log",
                 "/temp/*",
@@ -95,7 +94,6 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             [
-                "/vendor/",
                 "/src/Web/Resources/docs/",
                 "!/vendor/",
             ],

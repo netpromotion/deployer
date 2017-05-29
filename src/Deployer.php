@@ -240,7 +240,19 @@ class Deployer
             $compactedIgnores[$compactedIgnore] = $type;
         }
 
-        return array_keys($compactedIgnores);
+        $uniqueCompactedIgnores = [];
+        foreach (array_reverse($compactedIgnores) as $compactedIgnore => $type) {
+            if ("!" === $compactedIgnore[0]) {
+                $path = substr($compactedIgnore, 1);
+            } else {
+                $path = $compactedIgnore;
+            }
+            if (!isset($uniqueCompactedIgnores[$path]) && !isset($uniqueCompactedIgnores["!" . $path])) {
+                $uniqueCompactedIgnores[$compactedIgnore] = $type;
+            }
+        }
+
+        return array_keys(array_reverse($uniqueCompactedIgnores));
     }
 
     /**
