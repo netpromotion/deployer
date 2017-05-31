@@ -41,7 +41,6 @@ class DeployerTest extends \PHPUnit_Framework_TestCase
                 '!/temp/.gitignore',
                 "/vendor/netpromotion/deployer/vendor/",
                 "/tests/",
-                "/**/.git",
                 "/**/.git/",
                 "/deploy.local.json",
             ],

@@ -52,7 +52,7 @@ class Deployer
         );
 
         $knownFiles = [
-            ".git",
+            ".git/",
             "/deploy.json",
             "/deploy.local.json",
             $this->config["log"]["output"],
@@ -178,7 +178,7 @@ class Deployer
         if (empty($realPath) || !file_exists($realPath)) { // Unknown file or directory
             $realPath = $basePath . $ignore;
             $patterns[] = ($negative ? "!" : "") . $realPath;
-            if ($ignore !== "/*") {
+            if (DIRECTORY_SEPARATOR . "*" !== $ignore && DIRECTORY_SEPARATOR !== substr($realPath, -1)) {
                 $patterns[] = ($negative ? "!" : "") . $realPath . DIRECTORY_SEPARATOR;
             }
         } elseif ($fileInfo->isDir()) {
