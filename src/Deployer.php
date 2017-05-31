@@ -7,7 +7,6 @@ class Deployer
     const USER_IGNORE = 1;
     const DYNAMIC_IGNORE = 2;
     const ABSOLUTE_IGNORE_PATTERN = '/^[^\*^\?^\[]*$/';
-    const COMPACTABLE_DYNAMIC_IGNORE_PATTERN = "/^[^\*]*\*[^\*]+$/";
 
     /**
      * @var \SplFileInfo
@@ -68,14 +67,14 @@ class Deployer
 
         $this->config["log"] = array_merge($this->config["log"], $log);
         if (null !== $this->config["log"]["output"]) {
-            $this->config["log"]["output"] = $this->convertLineToPath($this->workingDir->getPathname(), $this->config["log"]["output"]);
+            $this->config["log"]["output"] = $this->convertIgnoreToPatterns($this->workingDir->getPathname(), $this->config["log"]["output"])[0];
         }
         if (null !== $this->config["log"]["config"]) {
-            $this->config["log"]["config"] = $this->convertLineToPath($this->workingDir->getPathname(), $this->config["log"]["config"]);
+            $this->config["log"]["config"] = $this->convertIgnoreToPatterns($this->workingDir->getPathname(), $this->config["log"]["config"])[0];
         }
 
-        $this->config["ignore"] = $this->compactIgnores(
-            $this->gatherIgnores($this->workingDir)
+        $this->config["ignore"] = $this->compactIgnoredPatterns(
+            $this->gatherIgnoredPatterns($this->workingDir)
         );
 
         return $this->config;
@@ -84,10 +83,9 @@ class Deployer
     /**
      * @param \SplFileInfo $directory
      * @param array $ignores
-     * @param array $recursiveIgnores
      * @return array
      */
-    private function gatherIgnores(\SplFileInfo $directory = null, array $ignores = null, array $recursiveIgnores = [])
+    private function gatherIgnoredPatterns(\SplFileInfo $directory = null, array $ignores = null)
     {
         if (null === $directory) {
             $directory = $this->workingDir;
@@ -97,30 +95,24 @@ class Deployer
             $negativeUserIgnores = [];
             $positiveUserIgnores = [];
             foreach ((array)@$this->config["ignore"] as $ignore) {
-                $ignore = $this->convertLineToPath($directory->getPathname(), $ignore, $recursiveIgnores);
-                if ("!" === $ignore[0]) {
-                    $negativeUserIgnores[$ignore] = self::USER_IGNORE;
-                } else {
-                    $positiveUserIgnores[$ignore] = self::USER_IGNORE;
+                foreach ($this->convertIgnoreToPatterns($directory->getPathname(), $ignore) as $pattern) {
+                    if ("!" === $pattern[0]) {
+                        $negativeUserIgnores[$pattern] = self::USER_IGNORE;
+                    } else {
+                        $positiveUserIgnores[$pattern] = self::USER_IGNORE;
+                    }
                 }
             }
             $ignores = $negativeUserIgnores;
         }
 
-        foreach ($recursiveIgnores as $recursiveIgnore) {
-            $recursiveIgnore = $this->convertLineToPath(
-                $directory->getPathname(),
-                $recursiveIgnore
-            );
-            $ignores[$recursiveIgnore] = self::DYNAMIC_IGNORE;
-        }
-
         if (file_exists($directory->getPathname() . "/.gitignore")) {
             $file = file_get_contents($directory->getPathname() . "/.gitignore");
-            foreach (explode("\n", $file) as $line) {
-                if (!empty($line)) {
-                    $line = $this->convertLineToPath($directory->getPathname(), $line, $recursiveIgnores);
-                    $ignores[$line] = self::DYNAMIC_IGNORE;
+            foreach (explode("\n", $file) as $ignore) {
+                if (!empty($ignore)) {
+                    foreach ($this->convertIgnoreToPatterns($directory->getPathname(), $ignore) as $pattern) {
+                        $ignores[$pattern] = self::DYNAMIC_IGNORE;
+                    }
                 }
             }
         }
@@ -140,7 +132,7 @@ class Deployer
                 continue; // Skip ignored folders
             }
 
-            $ignores = array_merge($ignores, $this->gatherIgnores($subDirectory, [], $recursiveIgnores));
+            $ignores = array_merge($ignores, $this->gatherIgnoredPatterns($subDirectory, []));
         }
 
         if (isset($positiveUserIgnores)) {
@@ -152,50 +144,57 @@ class Deployer
 
     /**
      * @param string $basePath
-     * @param string $item
-     * @param array $recursiveIgnores
-     * @return null|string
+     * @param string $ignore
+     * @return array
      */
-    private function convertLineToPath($basePath, $item, array &$recursiveIgnores = [])
+    private function convertIgnoreToPatterns($basePath, $ignore)
     {
-        $item = trim($item);
-        if (empty($item)) {
-            return null; // Skip empty lines
+        $ignore = trim($ignore);
+        if (empty($ignore)) {
+            return []; // Skip empty lines
         }
 
-        if ("#" === $item[0]) {
-            return null; // Skip comments
+        if ("#" === $ignore[0]) {
+            return []; // Skip comments
         }
 
-        if ("!" === $item[0]) {
+        if ("!" === $ignore[0]) {
             $negative = true;
-            $item = substr($item, 1); // Remove negative mark
+            $ignore = substr($ignore, 1); // Remove negative mark
         } else {
             $negative = false;
         }
 
-        if ("*" === $item) {
-            $item = "/*"; // Simplify recursive star wildcard by non-recursive rule
+        $patterns = [];
+        if ("*" === $ignore) {
+            $ignore = "/*"; // Simplify recursive star wildcard by non-recursive rule
+        } elseif (DIRECTORY_SEPARATOR !== $ignore[0]) {
+            $ignore = DIRECTORY_SEPARATOR . $ignore;
+            $patterns = $this->convertIgnoreToPatterns($basePath, DIRECTORY_SEPARATOR . "**" . $ignore);
         }
 
-        if (DIRECTORY_SEPARATOR !== $item[0]) {
-            $item = DIRECTORY_SEPARATOR . $item;
-            $recursiveIgnores[$item] = $item;
+        $fileInfo = new \SplFileInfo($basePath . $ignore);
+        $realPath = $fileInfo->getPathname();
+        if (empty($realPath) || !file_exists($realPath)) { // Unknown file or directory
+            $realPath = $basePath . $ignore;
+            $patterns[] = ($negative ? "!" : "") . $realPath;
+            if ($ignore !== "/*") {
+                $patterns[] = ($negative ? "!" : "") . $realPath . DIRECTORY_SEPARATOR;
+            }
+        } elseif ($fileInfo->isDir()) {
+            $patterns[] = ($negative ? "!" : "") . $realPath . DIRECTORY_SEPARATOR;
+        } else {
+            $patterns[] = ($negative ? "!" : "") . $realPath;
         }
 
-        $realPath = (new \SplFileInfo($basePath . $item))->getPathname();
-        if (empty($realPath)) {
-            $realPath = $basePath . $item; // Wildcard
-        }
-
-        return ($negative ? "!" : "") . $realPath;
+        return $patterns;
     }
 
     /**
      * @param array $ignores
      * @return array
      */
-    private function compactIgnores(array $ignores)
+    private function compactIgnoredPatterns(array $ignores)
     {
         $compactedIgnores = [];
         foreach ($ignores as $ignore => $type) {
@@ -211,24 +210,6 @@ class Deployer
             }
             if (preg_match(self::ABSOLUTE_IGNORE_PATTERN, $ignore)) {
                 if (file_exists($path)) {
-                    if (is_dir($path)) {
-                        $ignore .= DIRECTORY_SEPARATOR;
-                    }
-                    $compactedIgnore = $this->shortenIgnore($ignore);
-                }
-            } elseif(preg_match(self::COMPACTABLE_DYNAMIC_IGNORE_PATTERN, $ignore)) {
-                $dir = substr($path, 0, strrpos($path, DIRECTORY_SEPARATOR));
-                if (file_exists($dir)) {
-                    foreach (scandir($dir) as $item) {
-                        if (in_array($item, [".", ".."])) {
-                            continue; // Skip dots
-                        }
-                        if (fnmatch($path, $dir . DIRECTORY_SEPARATOR . $item)) {
-                            $compactedIgnore = $this->shortenIgnore($ignore);
-                            break;
-                        }
-                    }
-                } else {
                     $compactedIgnore = $this->shortenIgnore($ignore);
                 }
             } else {
