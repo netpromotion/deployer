@@ -3,10 +3,18 @@
 
 require_once __DIR__ . "/../src/init.php";
 
-passthru(sprintf(
-    "php %s %s",
-    escapeshellarg(VENDOR_DIR . "/bin/deployment"),
-    escapeshellarg(__DIR__ . "/../src/configuration_generator.php")
-), $return);
+if (file_exists(VENDOR_DIR . "/bin/deployment.bat")) { // Windows
+    passthru(sprintf(
+        "%s %s",
+        escapeshellarg(VENDOR_DIR . "/bin/deployment.bat"),
+        escapeshellarg(__DIR__ . "/../src/configuration_generator.php")
+    ), $return);
+} else { // Unix
+    passthru(sprintf(
+        "php %s %s",
+        escapeshellarg(VENDOR_DIR . "/bin/deployment"),
+        escapeshellarg(__DIR__ . "/../src/configuration_generator.php")
+    ), $return);
+}
 
 return $return;
