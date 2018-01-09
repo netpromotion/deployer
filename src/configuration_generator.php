@@ -9,4 +9,8 @@ if (isset($config["log"]["config"])) {
 }
 $config["log"] = $config["log"]["output"];
 
+if (null === $config["log"]) {
+    unset($config["log"]);
+}
+
 return $config;
